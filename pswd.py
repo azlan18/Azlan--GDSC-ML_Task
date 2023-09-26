@@ -1,52 +1,74 @@
-import string
-import secrets
+import java.util.*;
 
-def generate_password(length, use_special_characters):
-    # Define character sets
-    lowercase_letters = string.ascii_lowercase
-    uppercase_letters = string.ascii_uppercase
-    digits = string.digits
+class Process {
+    int arrivalTime;
+    int burstTime;
+    int completionTime;
+    int waitingTime;
+    int turnaroundTime;
 
-    # Initialize the characters variable based on complexity
-    if use_special_characters:
-        characters = lowercase_letters + uppercase_letters + digits + string.punctuation
-    else:
-        characters = lowercase_letters + uppercase_letters + digits
+    public Process(int arrivalTime, int burstTime) {
+        this.arrivalTime = arrivalTime;
+        this.burstTime = burstTime;
+    }
+}
 
-    # Check if length is valid
-    if length < 8:
-        raise ValueError("Password length should be at least 8 characters for security.")
+public class SJF {
+    public static void main(String args[]) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
 
-    # Initialize an empty string to store the password
-    password = ''
+        ArrayList<Process> processes = new ArrayList<>();
 
-    # Generate the password by appending 'length' random characters
-    for _ in range(length):
-        random_character = secrets.choice(characters)
-        password += random_character
+        for (int i = 0; i < n; i++) {
+            System.out.print("Enter arrival time for process " + (i + 1) + ": ");
+            int arrivalTime = sc.nextInt();
+            System.out.print("Enter burst time for process " + (i + 1) + ": ");
+            int burstTime = sc.nextInt();
+            processes.add(new Process(arrivalTime, burstTime));
+        }
 
-    return password
+        // Sort processes by burst time using Collections.sort() and a custom comparator
+        Collections.sort(processes, (p1, p2) -> {
+            if (p1.burstTime != p2.burstTime) {
+                return p1.burstTime - p2.burstTime;
+            } else {
+                return p1.arrivalTime - p2.arrivalTime;
+            }
+        });
 
-# Get user input for password length
-while True:
-    try:
-        length = int(input("Enter password length (at least 8 characters): "))
-        break  # Exit the loop if valid input is provided
-    except ValueError:
-        print("Please enter a valid integer.")
+        int currentTime = 0;
+        double totalWaitingTime = 0;
+        double totalTurnaroundTime = 0;
 
-# Get user input for complexity (1 for letters and digits, 2 for letters, digits, and special characters)
-while True:
-    try:
-        complexity = int(input("Enter password complexity (1 for letters and digits, 2 for letters, digits, and special characters): "))
-        if complexity not in [1, 2]:
-            raise ValueError()
-        break
-    except ValueError:
-        print("Please enter 1 or 2.")
+        System.out.println("Order of execution: ");
 
-# Generate the password based on user input
-use_special_characters = (complexity == 2)
-password = generate_password(length=length, use_special_characters=use_special_characters)
+        for (Process p : processes) {
+            // Calculate waiting time for the current process
+            p.waitingTime = currentTime - p.arrivalTime;
 
-print("Generated Password:", password)
+            if (p.waitingTime < 0) {
+                p.waitingTime = 0;
+            }
+
+            // Update current time and completion time
+            currentTime += p.burstTime;
+            p.completionTime = currentTime;
+
+            // Calculate turnaround time for the current process
+            p.turnaroundTime = p.completionTime - p.arrivalTime;
+
+            totalWaitingTime += p.waitingTime;
+            totalTurnaroundTime += p.turnaroundTime;
+
+            System.out.println("P" + (processes.indexOf(p) + 1));
+        }
+
+        double averageWaitingTime = totalWaitingTime / n;
+        double averageTurnaroundTime = totalTurnaroundTime / n;
+
+        System.out.println("AWT = " + averageWaitingTime);
+        System.out.println("ATAT = " + averageTurnaroundTime);
+    }
+}
