@@ -29,14 +29,19 @@ public class SJF {
             processes.add(new Process(arrivalTime, burstTime));
         }
 
-        // Sort processes by burst time using Collections.sort() and a custom comparator
-        Collections.sort(processes, (p1, p2) -> {
-            if (p1.burstTime != p2.burstTime) {
-                return p1.burstTime - p2.burstTime;
-            } else {
-                return p1.arrivalTime - p2.arrivalTime;
+        // Sort processes by burst time, and in case of a tie, use arrival time as tiebreaker
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
+                if (processes.get(j).burstTime > processes.get(j + 1).burstTime
+                        || (processes.get(j).burstTime == processes.get(j + 1).burstTime
+                                && processes.get(j).arrivalTime > processes.get(j + 1).arrivalTime)) {
+                    // Swap the processes
+                    Process temp = processes.get(j);
+                    processes.set(j, processes.get(j + 1));
+                    processes.set(j + 1, temp);
+                }
             }
-        });
+        }
 
         int currentTime = 0;
         double totalWaitingTime = 0;
